@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APIGhost Scan Report — {{ timestamp[:10] }}</title>
+    <style>
+        :root {
+            --bg-base: #0a0d14;
+            --bg-surface: #111726;
+            --bg-card: #161f33;
+            --bg-card-hover: #1c2742;
+            --border: #23304d;
+            --border-light: #2e3e63;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            
+            --cyan: #06b6d4;
+            --cyan-glow: rgba(6, 182, 212, 0.15);
+            --red: #ef4444;
+            --red-glow: rgba(239, 68, 68, 0.18);
+            --amber: #f59e0b;
+            --amber-glow: rgba(245, 158, 11, 0.15);
+            --green: #10b981;
+            --green-glow: rgba(16, 185, 129, 0.15);
+            --purple: #a855f7;
+            --blue: #3b82f6;
+            --gray: #64748b;
+
+            --radius: 10px;
+            --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 30px 40px;
+            min-height: 100vh;
+        }
+
+        code, pre, .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+        }
+
+        .logo-icon svg {
+            width: 26px;
+            height: 26px;
+            fill: white;
+        }
+
+        .brand-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-version {
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--cyan);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            -webkit-text-fill-color: var(--cyan);
+            letter-spacing: 0;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .btn-cyan {
+            background: var(--cyan);
+            color: #041018;
+            border-color: var(--cyan);
+        }
+
+        .btn-cyan:hover {
+            background: #22d3ee;
+            border-color: #22d3ee;
+            color: #041018;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        /* ── Alert Banners ── */
+        .alert-banner {
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+        }
+
+        .alert-critical {
+            background: var(--red-glow);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+
+        .alert-warning {
+            background: var(--amber-glow);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fcd34d;
+        }
+
+        .alert-secure {
+            background: var(--green-glow);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+        }
+
+        .alert-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        /* ── KPI Grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-light);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card.total::before { background: var(--cyan); }
+        .stat-card.confirmed::before { background: var(--red); box-shadow: 0 0 10px var(--red); }
+        .stat-card.likely::before { background: var(--amber); }
+        .stat-card.possible::before { background: #f97316; }
+        .stat-card.secure::before { background: var(--green); }
+        .stat-card.errors::before { background: var(--gray); }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-card.total .stat-value { color: var(--text-main); }
+        .stat-card.confirmed .stat-value { color: var(--red); }
+        .stat-card.likely .stat-value { color: var(--amber); }
+        .stat-card.possible .stat-value { color: #f97316; }
+        .stat-card.secure .stat-value { color: var(--green); }
+        .stat-card.errors .stat-value { color: var(--text-muted); }
+
+        /* ── Visual Analytics Section ── */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 900px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .analytics-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+        }
+
+        .analytics-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .donut-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .donut-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        .bar-chart-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bar-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .bar-row-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .bar-track {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.6s ease;
+        }
+
+        /* ── Explorer / Findings Table ── */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            color: var(--text-main);
+            border-color: var(--border-light);
+        }
+
+        .filter-btn.active {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .search-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: var(--text-main);
+            font-size: 13px;
+            width: 260px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-bar:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: var(--bg-surface);
+            color: var(--text-dim);
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: middle;
+        }
+
+        tr.finding-row {
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        tr.finding-row:hover {
+            background: var(--bg-card-hover);
+        }
+
+        tr.finding-row.expanded {
+            background: rgba(6, 182, 212, 0.04);
+            border-bottom: none;
+        }
+
+        /* ── Badges ── */
+        .method-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .method-GET { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .method-POST { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .method-PUT { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .method-PATCH { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .method-DELETE { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .verdict-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.3px;
+        }
+
+        .verdict-CONFIRMED { background: var(--red-glow); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .verdict-LIKELY { background: var(--amber-glow); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+        .verdict-POSSIBLE { background: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.4); }
+        .verdict-SECURE { background: var(--green-glow); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .verdict-ERROR { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.4); }
+
+        .score-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-bar {
+            width: 50px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        /* ── Expandable Details Drawer ── */
+        .details-row {
+            display: none;
+            background: #0d1322;
+        }
+
+        .details-row.open {
+            display: table-row;
+        }
+
+        .details-content {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .flow-step {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .step-body {
+            font-size: 13px;
+        }
+
+        .signals-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .signals-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .signals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .signal-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .signal-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .poc-box {
+            background: #080c14;
+            border: 1px solid #1f293d;
+            border-radius: 8px;
+            padding: 14px 16px;
+            position: relative;
+        }
+
+        .poc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .poc-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--cyan);
+            text-transform: uppercase;
+        }
+
+        .copy-btn {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: var(--cyan);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .copy-btn:hover {
+            background: var(--cyan);
+            color: #041018;
+        }
+
+        pre.poc-code {
+            color: #38bdf8;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-dim);
+            font-size: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* ── Utility ── */
+        .text-cyan { color: var(--cyan); }
+        .text-red { color: var(--red); }
+        .text-amber { color: var(--amber); }
+        .text-green { color: var(--green); }
+        .text-dim { color: var(--text-dim); }
+
+        .hidden { display: none !important; }
+
+        @media print {
+            body { background: white; color: black; padding: 10px; }
+            .header-actions, .filter-tabs, .search-bar, .copy-btn { display: none; }
+            .stat-card, .analytics-card, .table-container { border: 1px solid #ccc; background: white; color: black; }
+            .brand-title { -webkit-text-fill-color: black; }
+            .details-row { display: table-row !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── Header ── -->
+    <header class="header">
+        <div class="brand-container">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C7.58 2 4 5.58 4 10c0 3.31 2.01 6.16 4.9 7.37L8 20l2.5-1.5L13 20l2.5-1.5 2.5 1.5-.9-2.63C19.99 16.16 22 13.31 22 10c0-4.42-3.58-8-8-8zm-3 8c-.83 0-1.5-.67-1.5-1.5S8.17 7 9 7s1.5.67 1.5 1.5S9.83 10 9 10zm6 0c-.83 0-1.5-.67-1.5-1.5S14.17 7 15 7s1.5.67 1.5 1.5S15.83 10 15 10z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="brand-title">
+                    APIGHOST
+                    <span class="brand-version">v{{ version }}</span>
+                </div>
+                <div class="brand-subtitle">Stateful BOLA Detection Engine — Security Audit Report</div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn" onclick="window.print()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+                Print / Save PDF
+            </button>
+            <button class="btn btn-cyan" onclick="downloadJSON()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Export JSON
+            </button>
+        </div>
+    </header>
+
+    <!-- ── Alert Banner ── -->
+    {% if confirmed > 0 %}
+    <div class="alert-banner alert-critical">
+        <div class="alert-icon">🔴</div>
+        <div>
+            <strong>CRITICAL SECURITY VULNERABILITIES CONFIRMED:</strong>
+            {{ confirmed }} cross-user authorization (BOLA/IDOR) flaw{{ 's' if confirmed > 1 else '' }} detected. Immediate remediation required.
+        </div>
+    </div>
+    {% elif likely > 0 %}
+    <div class="alert-banner alert-warning">
+        <div class="alert-icon">🟡</div>
+        <div>
+            <strong>POTENTIAL AUTHORIZATION FLAWS DETECTED:</strong>
+            {{ likely }} endpoint chain{{ 's' if likely > 1 else '' }} flagged with high heuristic anomaly scores. Manual review recommended.
+        </div>
+    </div>
+    {% else %}
+    <div class="alert-banner alert-secure">
+        <div class="alert-icon">🟢</div>
+        <div>
+            <strong>API AUTHORIZATION AUDIT PASSED:</strong>
+            No Broken Object Level Authorization vulnerabilities detected across {{ total }} tested CRUD attack chains.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── KPI Stats Grid ── -->
+    <div class="stats-grid">
+        <div class="stat-card total">
+            <div class="stat-label">Total Chains</div>
+            <div class="stat-value">{{ total }}</div>
+        </div>
+        <div class="stat-card confirmed">
+            <div class="stat-label">Confirmed BOLA <span>🔴</span></div>
+            <div class="stat-value">{{ confirmed }}</div>
+        </div>
+        <div class="stat-card likely">
+            <div class="stat-label">Likely BOLA <span>🟡</span></div>
+            <div class="stat-value">{{ likely }}</div>
+        </div>
+        <div class="stat-card possible">
+            <div class="stat-label">Possible <span>🟠</span></div>
+            <div class="stat-value">{{ possible }}</div>
+        </div>
+        <div class="stat-card secure">
+            <div class="stat-label">Secure <span>🟢</span></div>
+            <div class="stat-value">{{ secure }}</div>
+        </div>
+        <div class="stat-card errors">
+            <div class="stat-label">Errors <span>⚪</span></div>
+            <div class="stat-value">{{ errors }}</div>
+        </div>
+    </div>
+
+    <!-- ── Visual Analytics Section ── -->
+    <div class="analytics-grid">
+        <!-- Donut Chart -->
+        <div class="analytics-card">
+            <div class="analytics-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0110 10h-10z"/></svg>
+                Verdict Distribution
+            </div>
+            <div class="donut-container">
+                <svg id="donut-chart" width="160" height="160" viewBox="0 0 42 42"></svg>
+                <div class="donut-legend">
+                    <div class="legend-item"><div class="legend-color" style="background: var(--red);"></div> Confirmed: {{ confirmed }}</div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--amber);"></div> Likely: {{ likely }}</div>
+                    <div class="legend-item"><div class="legend-color" style="background: #f97316;"></div> Possible: {{ possible }}</div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--green);"></div> Secure: {{ secure }}</div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--gray);"></div> Errors: {{ errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attack Vector Breakdown -->
+        <div class="analytics-card">
+            <div class="analytics-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+                Attack Vector Breakdown
+            </div>
+            <div class="bar-chart-container" id="bar-chart-container">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Vulnerability Score Results Graph ── -->
+    <div class="analytics-card" style="margin-bottom: 32px;">
+        <div class="analytics-card-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Vulnerability Score Results
+        </div>
+        <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 16px;">
+            BOLA confidence score per attack chain — higher scores indicate stronger evidence of authorization flaws.
+        </div>
+        <div id="vuln-score-chart" style="display: flex; flex-direction: column; gap: 10px;">
+            {% for result in results %}
+            {% set ep = result.chain.attack if result.chain.attack else result.chain.read %}
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="mono" style="min-width: 90px; font-size: 11px; font-weight: 700; color: var(--cyan);">{{ result.chain.chain_id }}</div>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                        <span class="mono text-dim">{{ ep.method.value }} {{ ep.path }}</span>
+                        <span class="verdict-badge verdict-{{ result.verdict.value }}" style="font-size: 9px; padding: 1px 6px;">{{ result.verdict.value }}</span>
+                    </div>
+                    <div class="bar-track" style="height: 14px; border-radius: 7px;">
+                        <div class="bar-fill vuln-bar-animate" style="
+                            width: {{ result.score * 100 }}%;
+                            height: 100%;
+                            border-radius: 7px;
+                            background: linear-gradient(90deg,
+                                {% if result.score >= 0.75 %}#dc2626, #ef4444{% elif result.score >= 0.5 %}#d97706, #f59e0b{% elif result.score >= 0.25 %}#ea580c, #f97316{% else %}#059669, #10b981{% endif %}
+                            );
+                            box-shadow: 0 0 8px {% if result.score >= 0.75 %}rgba(239, 68, 68, 0.4){% elif result.score >= 0.5 %}rgba(245, 158, 11, 0.3){% else %}rgba(16, 185, 129, 0.3){% endif %};
+                            transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                        "></div>
+                    </div>
+                </div>
+                <div class="mono" style="min-width: 44px; text-align: right; font-size: 13px; font-weight: 800; color: {% if result.score >= 0.75 %}var(--red){% elif result.score >= 0.5 %}var(--amber){% elif result.score >= 0.25 %}#f97316{% else %}var(--green){% endif %};">
+                    {{ "%.2f"|format(result.score) }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if results %}
+        <div style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-dim);">
+            <span>Score Range: <strong class="text-green">0.00</strong> (Secure) → <strong class="text-red">1.00</strong> (Confirmed BOLA)</span>
+            <span>Avg Score: <strong style="color: var(--text-main);">{{ "%.2f"|format(results | map(attribute='score') | list | sum / (results | length or 1)) }}</strong></span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── Findings & Chains Explorer ── -->
+    <div class="section-header">
+        <div class="section-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+            Attack Chains & Findings
+        </div>
+        <div class="filter-tabs">
+            <button class="filter-btn active" onclick="setFilter('ALL')">All ({{ total }})</button>
+            <button class="filter-btn" onclick="setFilter('VULN')">Vulnerabilities ({{ confirmed + likely }})</button>
+            <button class="filter-btn" onclick="setFilter('CONFIRMED')">Confirmed ({{ confirmed }})</button>
+            <button class="filter-btn" onclick="setFilter('LIKELY')">Likely ({{ likely }})</button>
+            <button class="filter-btn" onclick="setFilter('SECURE')">Secure ({{ secure }})</button>
+            <button class="filter-btn" onclick="setFilter('ERROR')">Errors ({{ errors }})</button>
+        </div>
+        <input type="text" id="search-input" class="search-bar" placeholder="Search paths, chains, methods..." oninput="applySearch()">
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 30px;"></th>
+                    <th>Chain ID</th>
+                    <th>Resource</th>
+                    <th>Variant</th>
+                    <th>Attack Endpoint</th>
+                    <th>Verdict</th>
+                    <th>Score</th>
+                    <th>Status (A/B)</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody id="findings-tbody">
+                {% for result in results %}
+                {% set ep = result.chain.attack if result.chain.attack else result.chain.read %}
+                <tr class="finding-row" id="row-{{ result.chain.chain_id }}" data-verdict="{{ result.verdict.value }}" data-variant="{{ result.chain.variant.value }}" onclick="toggleDetails('{{ result.chain.chain_id }}')">
+                    <td style="text-align: center; color: var(--text-dim);">
+                        <span id="icon-{{ result.chain.chain_id }}">▶</span>
+                    </td>
+                    <td class="mono" style="font-weight: 700; color: var(--cyan);">{{ result.chain.chain_id }}</td>
+                    <td style="font-weight: 600;">{{ result.chain.resource_name }}</td>
+                    <td class="mono text-dim" style="font-size: 11px;">{{ result.chain.variant.value }}</td>
+                    <td>
+                        <span class="method-badge method-{{ ep.method.value }}">{{ ep.method.value }}</span>
+                        <span class="mono">{{ ep.path }}</span>
+                    </td>
+                    <td>
+                        <span class="verdict-badge verdict-{{ result.verdict.value }}">
+                            {{ result.verdict.value }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="score-bar-wrap">
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: {{ result.score * 100 }}%; background: {% if result.score >= 0.75 %}var(--red){% elif result.score >= 0.5 %}var(--amber){% elif result.score >= 0.25 %}#f97316{% else %}var(--green){% endif %};"></div>
+                            </div>
+                            <span class="mono" style="font-size: 11px;">{{ "%.2f"|format(result.score) }}</span>
+                        </div>
+                    </td>
+                    <td class="mono" style="font-size: 12px;">
+                        <span class="{% if result.read_as_owner_status == 200 or result.read_as_owner_status == 201 %}text-green{% else %}text-dim{% endif %}">{{ result.read_as_owner_status or '-' }}</span>
+                        <span class="text-dim">/</span>
+                        <span class="{% if result.read_as_attacker_status in [200, 201, 204] and result.verdict.value in ['CONFIRMED', 'LIKELY'] %}text-red{% else %}text-dim{% endif %}">{{ result.read_as_attacker_status or '-' }}</span>
+                    </td>
+                    <td class="mono text-dim" style="font-size: 11px;">{{ result.duration_ms }}ms</td>
+                </tr>
+
+                <!-- Collapsible Details Drawer -->
+                <tr class="details-row" id="details-{{ result.chain.chain_id }}">
+                    <td colspan="9">
+                        <div class="details-content">
+                            <!-- 3-Phase Flow -->
+                            <div class="flow-grid">
+                                <div class="flow-step">
+                                    <div class="step-header">
+                                        <span>Phase 1: Setup (User A)</span>
+                                        <span class="method-badge method-{{ result.chain.create.method.value }}">{{ result.chain.create.method.value }}</span>
+                                    </div>
+                                    <div class="step-body">
+                                        <div class="mono text-dim" style="margin-bottom: 4px;">{{ result.chain.create.path }}</div>
+                                        <div>Status: <strong class="{% if result.create_status in [200, 201] %}text-green{% else %}text-red{% endif %}">{{ result.create_status }}</strong></div>
+                                        {% if result.resource_ids %}
+                                        <div class="mono text-cyan" style="font-size: 11px; margin-top: 4px;">Extracted IDs: {{ result.resource_ids | tojson }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="flow-step">
+                                    <div class="step-header">
+                                        <span>Phase 2: Attack (User B)</span>
+                                        <span class="method-badge method-{{ ep.method.value }}">{{ ep.method.value }}</span>
+                                    </div>
+                                    <div class="step-body">
+                                        <div class="mono text-dim" style="margin-bottom: 4px;">{{ ep.path }}</div>
+                                        <div>Attacker Status: <strong class="{% if result.read_as_attacker_status in [200, 201, 204] and result.verdict.value in ['CONFIRMED', 'LIKELY'] %}text-red{% else %}text-green{% endif %}">{{ result.read_as_attacker_status }}</strong></div>
+                                        <div>Owner Baseline: <strong class="text-dim">{{ result.read_as_owner_status }}</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="flow-step">
+                                    <div class="step-header">
+                                        <span>Phase 3: Teardown</span>
+                                        {% if result.chain.delete %}
+                                        <span class="method-badge method-DELETE">DELETE</span>
+                                        {% else %}
+                                        <span class="text-dim">N/A</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="step-body">
+                                        {% if result.chain.delete %}
+                                        <div class="mono text-dim" style="margin-bottom: 4px;">{{ result.chain.delete.path }}</div>
+                                        <div>Cleaned Up: <strong class="{% if result.teardown_success %}text-green{% else %}text-amber{% endif %}">{{ 'Yes' if result.teardown_success else 'No' }}</strong></div>
+                                        {% else %}
+                                        <div class="text-dim">No teardown endpoint configured</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Heuristic Signals -->
+                            {% if result.signals %}
+                            <div class="signals-box">
+                                <div class="signals-title">Heuristic Verdict Signals</div>
+                                <div class="signals-grid">
+                                    {% for signal_name, signal_val in result.signals.items() %}
+                                    <div class="signal-item">
+                                        <div class="signal-meta">
+                                            <span class="text-dim mono">{{ signal_name }}</span>
+                                            <strong class="mono {% if signal_val >= 0.7 %}text-red{% elif signal_val >= 0.3 %}text-amber{% else %}text-green{% endif %}">{{ "%.2f"|format(signal_val) }}</strong>
+                                        </div>
+                                        <div class="bar-track">
+                                            <div class="bar-fill" style="width: {{ signal_val * 100 }}%; background: {% if signal_val >= 0.7 %}var(--red){% elif signal_val >= 0.3 %}var(--amber){% else %}var(--green){% endif %};"></div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- PoC Generator -->
+                            <div class="poc-box">
+                                <div class="poc-header">
+                                    <span class="poc-title">Reproduction PoC (cURL)</span>
+                                    <button class="copy-btn" onclick="copyPoC('poc-{{ result.chain.chain_id }}', event)">Copy cURL</button>
+                                </div>
+                                <pre class="poc-code mono" id="poc-{{ result.chain.chain_id }}">curl -X {{ ep.method.value }} "https://TARGET_HOST{{ ep.path }}" \
+  -H "Authorization: Bearer &lt;ATTACKER_TOKEN_B&gt;" \
+  -H "Content-Type: application/json"</pre>
+                            </div>
+
+                            {% if result.error %}
+                            <div style="margin-top: 12px; font-size: 12px; color: var(--red);">
+                                <strong>Execution Error:</strong> {{ result.error }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+        <div>Generated on <strong>{{ timestamp }}</strong> by <strong>APIGhost v{{ version }}</strong></div>
+        <div class="mono">Open Source Stateful API Security Testing Engine</div>
+    </footer>
+
+    <!-- Embedded Data for Client-side Charts and Interactivity -->
+    <script id="report-raw-data" type="application/json">
+    {{ results_json | safe }}
+    </script>
+
+    <script>
+        const reportData = JSON.parse(document.getElementById('report-raw-data').textContent);
+        let currentFilter = 'ALL';
+
+        // ── Render Charts ──
+        function renderDonutChart() {
+            const confirmed = {{ confirmed }};
+            const likely = {{ likely }};
+            const possible = {{ possible }};
+            const secure = {{ secure }};
+            const errors = {{ errors }};
+            const total = {{ total }} || 1;
+
+            const slices = [
+                { val: confirmed, color: '#ef4444' },
+                { val: likely, color: '#f59e0b' },
+                { val: possible, color: '#f97316' },
+                { val: secure, color: '#10b981' },
+                { val: errors, color: '#64748b' }
+            ];
+
+            const svg = document.getElementById('donut-chart');
+            let accumulatedPercent = 0;
+            let paths = '';
+
+            slices.forEach(slice => {
+                if (slice.val === 0) return;
+                const percent = (slice.val / total) * 100;
+                const dashArray = `${percent} ${100 - percent}`;
+                const dashOffset = 100 - accumulatedPercent + 25; // 25 to start at top
+
+                paths += `<circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="${slice.color}" stroke-width="4.5" stroke-dasharray="${dashArray}" stroke-dashoffset="${dashOffset}"></circle>`;
+                accumulatedPercent += percent;
+            });
+
+            if (total === 0 || (confirmed + likely + possible + secure + errors === 0)) {
+                paths = `<circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#23304d" stroke-width="4.5"></circle>`;
+            }
+
+            svg.innerHTML = `
+                ${paths}
+                <g class="donut-text">
+                    <text x="50%" y="46%" text-anchor="middle" font-size="7" font-weight="bold" fill="#f1f5f9">${total}</text>
+                    <text x="50%" y="58%" text-anchor="middle" font-size="3" fill="#64748b" text-transform="uppercase">Chains</text>
+                </g>
+            `;
+        }
+
+        function renderBarChart() {
+            const variantCounts = {};
+            reportData.results.forEach(r => {
+                const variant = r.variant || 'OTHER';
+                variantCounts[variant] = (variantCounts[variant] || 0) + 1;
+            });
+
+            const container = document.getElementById('bar-chart-container');
+            container.innerHTML = '';
+
+            const maxCount = Math.max(...Object.values(variantCounts), 1);
+
+            const sortedVariants = Object.entries(variantCounts).sort((a, b) => b[1] - a[1]);
+
+            if (sortedVariants.length === 0) {
+                container.innerHTML = '<div class="text-dim" style="font-size: 13px;">No attack chains recorded.</div>';
+                return;
+            }
+
+            sortedVariants.forEach(([variant, count]) => {
+                const percent = (count / maxCount) * 100;
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+                row.innerHTML = `
+                    <div class="bar-row-header">
+                        <span class="mono">${variant}</span>
+                        <strong>${count}</strong>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${percent}%; background: linear-gradient(90deg, #06b6d4, #3b82f6);"></div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // ── Details Drawer Toggle ──
+        function toggleDetails(chainId) {
+            const row = document.getElementById(`row-${chainId}`);
+            const details = document.getElementById(`details-${chainId}`);
+            const icon = document.getElementById(`icon-${chainId}`);
+
+            const isOpen = details.classList.contains('open');
+            if (isOpen) {
+                details.classList.remove('open');
+                row.classList.remove('expanded');
+                icon.textContent = '▶';
+            } else {
+                details.classList.add('open');
+                row.classList.add('expanded');
+                icon.textContent = '▼';
+            }
+        }
+
+        // ── Filter System ──
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFilterAndSearch();
+        }
+
+        function applySearch() {
+            applyFilterAndSearch();
+        }
+
+        function applyFilterAndSearch() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('tr.finding-row');
+
+            rows.forEach(row => {
+                const verdict = row.getAttribute('data-verdict');
+                const chainId = row.id.replace('row-', '');
+                const detailsRow = document.getElementById(`details-${chainId}`);
+                const rowText = row.innerText.toLowerCase();
+
+                let matchesFilter = true;
+                if (currentFilter === 'VULN') {
+                    matchesFilter = (verdict === 'CONFIRMED' || verdict === 'LIKELY');
+                } else if (currentFilter !== 'ALL') {
+                    matchesFilter = (verdict === currentFilter);
+                }
+
+                let matchesSearch = true;
+                if (query) {
+                    matchesSearch = rowText.includes(query);
+                }
+
+                if (matchesFilter && matchesSearch) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                    if (detailsRow) {
+                        detailsRow.classList.remove('open');
+                        row.classList.remove('expanded');
+                        const icon = document.getElementById(`icon-${chainId}`);
+                        if (icon) icon.textContent = '▶';
+                    }
+                }
+            });
+        }
+
+        // ── PoC Copy ──
+        function copyPoC(elementId, event) {
+            event.stopPropagation();
+            const code = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                btn.style.background = '#10b981';
+                btn.style.color = '#fff';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 1500);
+            });
+        }
+
+        // ── Download JSON ──
+        function downloadJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(reportData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `apighost_report_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDonutChart();
+            renderBarChart();
+        });
+    </script>
+</body>
+</html>

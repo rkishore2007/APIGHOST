@@ -1,0 +1,66 @@
+# APIGhost Scan Report
+
+**Generated:** {{ timestamp }}  
+**Version:** APIGhost v{{ version }}
+
+## Summary
+- **Total Chains Scanned:** {{ total }}
+- **Confirmed BOLA:** {{ confirmed }} 🔴
+- **Likely BOLA:** {{ likely }} 🟠
+- **Possible:** {{ possible }} 🟡
+- **Secure:** {{ secure }} 🟢
+- **Errors:** {{ errors }} ⚪
+
+### Verdict Distribution
+
+```mermaid
+pie title Verdict Distribution
+    "Confirmed BOLA" : {{ confirmed }}
+    "Likely BOLA" : {{ likely }}
+    "Possible" : {{ possible }}
+    "Secure" : {{ secure }}
+    "Errors" : {{ errors }}
+```
+
+### Verdict Count Breakdown
+
+```mermaid
+xychart-beta
+    title "Results by Verdict Category"
+    x-axis ["Confirmed", "Likely", "Possible", "Secure", "Errors"]
+    y-axis "Count" 0 --> {{ total }}
+    bar [{{ confirmed }}, {{ likely }}, {{ possible }}, {{ secure }}, {{ errors }}]
+```
+
+### Scan Execution Flow
+
+```mermaid
+flowchart LR
+    A["📄 Spec Parsed"] --> B["🔗 {{ total }} Chains Built"]
+    B --> C["⚔️ Cross-User Tests"]
+    C --> D["🔴 {{ confirmed }} Confirmed"]
+    C --> E["🟠 {{ likely }} Likely"]
+    C --> F["🟡 {{ possible }} Possible"]
+    C --> G["🟢 {{ secure }} Secure"]
+    C --> H["⚪ {{ errors }} Errors"]
+```
+
+{% if results %}
+### Per-Chain Score Distribution
+
+```mermaid
+xychart-beta
+    title "BOLA Score per Attack Chain"
+    x-axis [{% for result in results %}"{{ result.chain.chain_id }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+    y-axis "Score" 0 --> 1
+    bar [{% for result in results %}{{ "%.2f"|format(result.score) }}{% if not loop.last %}, {% endif %}{% endfor %}]
+```
+{% endif %}
+
+## Detailed Results
+
+| Chain ID | Resource | Variant | Verdict | Score | Attack Endpoint |
+|----------|----------|---------|---------|-------|-----------------|
+{% for result in results -%}
+| {{ result.chain.chain_id }} | {{ result.chain.resource_name }} | {{ result.chain.variant.value }} | **{{ result.verdict.value }}** | {{ "%.2f"|format(result.score) }} | `{{ result.chain.attack.method.value if result.chain.attack else result.chain.read.method.value }} {{ result.chain.attack.path if result.chain.attack else result.chain.read.path }}` |
+{% endfor %}
