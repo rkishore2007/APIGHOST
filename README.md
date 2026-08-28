@@ -64,6 +64,16 @@ pipx install git+https://github.com/Arul-AGC/APIGhost.git
 pip install git+https://github.com/Arul-AGC/APIGhost.git
 ```
 
+### ⚡ 1-Click Windows Quick Start (No Terminal Knowledge Needed)
+
+If you are on Windows, simply double-click **`run.bat`** (or **`start.bat`**). It will open an interactive menu allowing you to:
+- 🚀 **Generate a Sample Report** with full visual graphs and view it in your browser immediately.
+- 🔍 **Run a Live API Scan** by typing in your spec and credentials with interactive prompts.
+- 🔗 **Preview Attack Chains** from any OpenAPI specification.
+- 🧪 **Run the Test Suite** (94+ Pytest checks).
+- 📦 **Install and Update Dependencies** automatically.
+
+
 ## Quick Start
 
 ### 1. The Crawler (If you don't have an OpenAPI spec)
