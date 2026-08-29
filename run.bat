@@ -75,13 +75,13 @@ goto MENU
 :DEMO
 cls
 echo ========================================================================
-echo  [1] Generating Sample APIGhost Report with Visual Graphs...
+echo  [1] Generating APIGhost Combined Visual Graph Report...
 echo ========================================================================
 echo.
-!PY_CMD! generate_sample_report.py
+!PY_CMD! generate_combined_report.py
 echo.
 echo ========================================================================
-echo  Demo report generated successfully!
+echo  Combined report generated and opened in browser!
 echo ========================================================================
 echo.
 pause
