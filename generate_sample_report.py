@@ -158,20 +158,27 @@ if __name__ == "__main__":
 
     reporter = Reporter(results)
 
-    # Generate HTML report
-    html_path = os.path.join(os.path.dirname(__file__), "sample_report.html")
-    reporter.save(html_path, format="html")
-    print(f"  ✅ HTML report saved: {html_path}")
+    # Generate HTML reports (both primary report.html and secondary sample_report.html)
+    sample_html_path = os.path.join(os.path.dirname(__file__), "sample_report.html")
+    primary_html_path = os.path.join(os.path.dirname(__file__), "report.html")
+    reporter.save(sample_html_path, format="html")
+    reporter.save(primary_html_path, format="html")
+    print(f"  ✅ HTML sample report saved:  {sample_html_path}")
+    print(f"  ✅ HTML primary report saved: {primary_html_path}")
 
-    # Generate Markdown report
-    md_path = os.path.join(os.path.dirname(__file__), "sample_report.md")
-    reporter.save(md_path, format="md")
-    print(f"  ✅ Markdown report saved: {md_path}")
+    # Generate Markdown reports
+    sample_md_path = os.path.join(os.path.dirname(__file__), "sample_report.md")
+    primary_md_path = os.path.join(os.path.dirname(__file__), "report.md")
+    reporter.save(sample_md_path, format="md")
+    reporter.save(primary_md_path, format="md")
+    print(f"  ✅ Markdown reports saved:    {sample_md_path} & {primary_md_path}")
 
-    # Generate JSON report
-    json_path = os.path.join(os.path.dirname(__file__), "sample_report.json")
-    reporter.save(json_path, format="json")
-    print(f"  ✅ JSON report saved: {json_path}")
+    # Generate JSON reports
+    sample_json_path = os.path.join(os.path.dirname(__file__), "sample_report.json")
+    primary_json_path = os.path.join(os.path.dirname(__file__), "report.json")
+    reporter.save(sample_json_path, format="json")
+    reporter.save(primary_json_path, format="json")
+    print(f"  ✅ JSON reports saved:        {sample_json_path} & {primary_json_path}")
 
     # Print summary
     print(f"\n📊 Sample Data Summary:")
@@ -182,5 +189,10 @@ if __name__ == "__main__":
     print(f"  🟢 Secure:     {reporter.secure}")
     print(f"  ⚪ Errors:     {reporter.errors}")
 
-    print(f"\n🌐 Opening HTML report in browser...")
-    os.startfile(html_path)
+    print(f"\n🌐 Opening sample_report.html in your browser...")
+    try:
+        os.startfile(sample_html_path)
+    except Exception:
+        import webbrowser
+        webbrowser.open(sample_html_path)
+
